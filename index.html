@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Site Information Search Interface</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; }
+    h2 { margin-bottom: 10px; }
+    input[type="text"] { width: 300px; padding: 8px; margin-right: 10px; }
+    button { padding: 8px 12px; margin-right: 6px; }
+    .note { margin-top: 10px; font-size: 14px; color: #555; }
+    .section { background: #fff; padding: 15px; margin-top: 20px; border-radius: 6px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+    .section h3 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 6px; }
+    .field { margin: 6px 0; }
+    .label { font-weight: bold; display: inline-block; width: 220px; vertical-align: top; }
+    #result { margin-top: 20px; }
+  </style>
+</head>
+<body>
+ 
+<h2>📡 Site Information Search Interface</h2>
+ 
+<input type="text" id="searchInput" placeholder="Enter site name or ID..." />
+<button onclick="search()">Search</button>
+<button onclick="clearResult()">Clear</button>
+ 
+<div class="note">Database loaded. WIDs are available.</div>
+ 
+<div id="result"></div>
+ 
+<script>
+// Multi-line string database
+const rawData =`Seq,Site Name, Site ID,Region,District,Latitude,Longitude,Site CLLI,Ownership,Site Type,Site Category,Power Supply Type,SCECO Account No.,Battery Availability,Battery Status, Battery Capacity in Hrs,Back up time in Hours,UPS Availability,ATS Availability,ATS Status,MSP,BB CAPEX ,Number of AC,AC Type,AC Condition (Working / Not Working),AC Condition,AC CAPEX Number (BPM),Number of Generator,Generator Capacity,GEN1 Status,GEN2 Status,Generator CAPEX Number (BPM),DC System Capacity,Number of Rectifiers,Number of working Rectifiers,Site DC Total Capacity,DC System CAPEX Number (BPM),Rehab. Pending Issues,Remarks (Issues)
+ 
+ 
+ 
+1,ZMJ025,ZMJ025,South,Asir,18.0708,42.5093,ANIQRRAB,Mobily,MAS-shelter,Green Field,STB,NA,Yes,Weak,150,25 Mins ,No,No,NA,Huawei,178914,2,Pacakage,Working ,Working ,,,,,,,245 amp,3,3,41 A,380990,,
+2,HWYHBKAA,HWYHBKAA,South,Baha,20.011983,41.466263,HWYHBKAA,Zain,LDN-shelter,Roof Top,STB,NA,Yes,Good,NA,NA,No,No,NA,Huawei,,2,Split,Working ,Working ,,,,,,,NA,NA,NA,NA,,,Rectifier & BB NA
+3,FSHS01,FSHS01,South,Najran,18.380528,45.110417,ZLMAJNAB ,STC,LDN-shelter,Green Field,STB,10052697037,Yes,Good,200 / 500,"6H , 45 Mins ",No,Yes,Working,Huawei,178716,4,Package,Working ,Working ,,1,62,Working,,,"600 amp ,350 amp","8, 14","8, 14","50 A , 84 A",178878,,BB Good/ Weak
+4,752-11-000,752-11-000,South,Asir,18.65972,42.4375,SBHARRAB,STC,LDN-shelter,Green Field,STB,10052824711,Yes,Dead,400,0,No,No,NA,Huawei,86998,2,Pacakage,Working ,Working ,,,,,,,900 amp,4,4,18 A,,,
+5,752-00-000,752-00-000,South,Asir,18.64417076,42.31469727,SBHARR00,STC,LDN-shelter,Green Field,STB,30062691923,Yes,Good,350 / 400 / 210,"19H 30Mins , 0 , 2H 30 Mins ",No,Yes,Working,Huawei,127638,5,"Pacakage/ Split","AC-1 & AC-2 EOL / AC-3 AC-4 AC-5 Working ","AC-1 & AC-2 Not Working / AC-3 AC-4 AC-5 Working ",21762,1,100,Working,,,"1,170 amp , 243 amp","6,9","6,9","30,18 A",,,BB Good/Weak
+6,712-36-000,712-36-000,South,Baha,19.971721,41.362169,QURABKAC,STC,LDN-shelter,Green Field,STB,30062691469,Yes,Good,152,3H,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,336 amp,2,2,15 A,,,
+7,795-31-312,795-31-312,South,Asir,17.60638,43.09222,JLTMJZAA,STC,LDN-shelter,Green Field,STB,10104317301,Yes,Good,200,16H,No,Yes,Working,Huawei,,2,Pacakage,Working ,Working ,,1,60,Working,,,1250 amp,15,15,29 A,,,
+8,708-00-311,708-00-311,South,Najran,17.84556,44.02111,HBUNJNAA,STC,LDN-Building,Green Field,Dual Generator,NA,Yes,Dead,152,0,No,Yes,Working,Huawei,86854,2,Package,Working ,Working ,,2,76,Not Working,Working,173452,500 amp,2,2,18 A,Pending,,
+9,Z7D012,Z7D012,South,Asir,18.0708,42.5093,FRSHRRAH,Mobily,MAS-shelter,Green Field,STB,NA,No,Stolen,NA,0,No,No,NA,Huawei,168066,2,Pacakage,Working ,Working ,,,,,,,222 amp,4,4,41 A,179355,,
+10,ZNN886,ZNN886,South,Najran,17.55470085,44.70915985,NJRNJNDC,Mobily,MAS-shelter,Green Field,STB,NA,Yes,Dead,190,0,No,No,NA,Huawei,33294,2,Pacakage,Working ,Working ,,,,,,,"600 amp , 600 amp","5 , 6","5 , 6","109 A , 80 A",179356,,
+11,ZJZ718,ZJZ718,South,Jizan,16.91199,42.92315,HRJHJZAB,Mobily,MAS-shelter,Green Field,STB,NA,Yes,Good,200,4H 30 Mins ,No,No,NA,Huawei,189513,2,Pacakage,Working ,Working ,,,,,,,600 amp,7,7,135 A,,,
+12,ZNM060,ZNM060,South,Asir,19.2192,42.081,AIRQRRAE,Mobily,MAS-shelter,Green Field,STB,NA,Yes,Good,170,3H 10 Mins ,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,600 amp,6,6,109 A,,,
+13,ZJZ941,ZJZ941,South,Jizan,17.26795,43.12867,SAGLJZAB,Mobily,MAS-shelter,Green Field,STB,NA,Yes,Good,200,4H,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,600 amp,7,7,95 A,,,
+14,ZJZ842,ZJZ842,South,Jizan,16.93411,42.63245,JLMTRRAI,Mobily,MAS-shelter,Green Field,STB,NA,Yes,Good,200,8H,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,720 amp,5,5,40 A,,,
+15,ZJZ549,ZJZ549,South,Jizan,16.93411,42.63245,RSNIJZAA,Mobily,MAS-shelter,Green Field,STB,NA,Yes,Good,150,2H,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,720 amp,4,4,99 A,,,
+16,ZJZ493,ZJZ493,South,Jizan,16.63603,42.15091,QDABJZAA,Mobily,MAS-ODU,Green Field,Dual Generator,NA,Yes,Good,100,3H 30 Mins ,No,Yes,Not Workig,Huawei,,2,Huawei,Working ,Working ,,2,24,Working,Not Working,269796,200 amp,4,4,56 A,,,
+17,ZJZ489,ZJZ489,South,Jizan,17.277685,42.607263,AQIDJZAF,Mobily,MAS-shelter,Green Field,STB,NA,No,Stolen,NA,0,No,No,NA,Huawei,,0,NA,NA,NA,421179 (Opex),,,,,,480 amp,8,8,170 A,,,AC & BB Stolen
+18,ZJZ485,ZJZ485,South,Jizan,16.910107,42.568116,RWDAJZAO,Mobily,MAS-shelter,Green Field,STB,10052891704,Yes,Good,200,3H 20 Mins ,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,720 amp,5,5,141 A,,,
+19,ZJZ464,ZJZ464,South,Jizan,16.773117,42.910983,HWRNJZAA,Mobily,MAS-shelter,Green Field,STB,NA,No,Stolen,NA,0,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,600 amp,6,6,106 A ,,,
+20,ZJZ458,ZJZ458,South,Jizan,17.03811,42.55409,SLMAJZAB,Mobily,MAS-shelter,Green Field,STB,NA,No,Stolen,NA,0,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,540 amp,6,6,132 A,Pending,,
+21,ZJZ386,ZJZ386,South,Jizan,16.8503,42.5899,SENAJZAX,Mobily,MAS-shelter,Green Field,STB,NA,Yes,Good,200,3H ,No,No,NA,Huawei,,2,Pacakage,Working /EOL ,"AC-1 Working / AC-2 EOL ",,,,,,,720 amp,5,5,119 A,,,
+22,ZBH998,ZBH998,South,Baha,20.08341,41.37371,MSMRBKAB,Mobily,MAS-shelter,Green Field,STB,NA,Yes,Good,200,4H 30 Mins ,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,720 amp,8,8,100A,,,
+23,Z6B025,Z6B025,South,Jizan,17.647483,42.671599,FTHAJZAA,Mobily,MAS-shelter,Green Field,Dual Generator,NA,Yes,Good,150,7H,No,Yes,Working,Huawei,,2,Pacakage,Working ,Working ,,2,33,Working,Working,,720 amp,5,5,65 A,,,
+24,MW2156,MW2156,South,Najran,17.34,46.601667,SHRRJNAG,STC,LDN-Building,Green Field,Dual Generator,NA,Yes,Good,200,10H 30 Mins ,No,Yes,Working,Huawei,,4,"Pacakage/Split","AC-1 & AC2 EOL/AC-3 & 4  Working "," AC1 & AC2 Not Working /AC-3 Working but in Bad Condition/AC-4 Working ",178849,2,45,Working,Working,,350 amp,9,9,37 A,,,
+25,ZNN856,ZNN856,South,Najran,17.5792,44.2383,NJRNJNIK,Mobily,MAS-shelter,Green Field,STB,NA,Yes,Good,150,3H,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,600 amp,7,7,101 A,,,
+26,ZNN848,ZNN848,South,Najran,17.524194,44.26056,NJRNJNIO,Mobily,MAS-shelter,Green Field,STB,NA,Yes,Weak,180, 1Hour 6 Mins ,No,No,NA,Huawei,in Progress ,2,Pacakage,Working ,Working ,,,,,,,600 amp,6,6,117 A,,,
+27,MWNA01,MWNA01,South,Najran,17.57082,43.75921,HDADJNAC,STC,LDN-shelter,Green Field,STB,30062691585,Yes,Dead,300,0,No,Yes,Working,Huawei,269797,4,Package,Working ,Working ,,1,52,Working,,,1170 amp,6,6,20 A,,,
+28,MWKhadra,MWKhadra,South,Najran,17.5,44.73333,HBUNJNAD,STC,LDN-Building,Green Field,STB,10052886901,Yes,Good,170 / 152,4H,No,Yes,Working,Huawei,,2,Package,"AC-1 Working in Bad Condition/AC-2 EOL ","AC-1 Working in Bad Condition / AC-2 Not Working ",33792,1,25,Working,,,300 amp,4,4,53 A,178752,,
+29,MW2155,MW2155,South,Najran,17.421667,46.381667,SHRRJNAF,STC,LDN-Building,Green Field,Dual Generator,NA,Yes,Good,900,9H,No,Yes,Working,Huawei,,3,"Pacakage/Floor Standing","AC-1 & AC2 EOL/AC-3 Working "," AC1 & AC2 Not Working/AC-3 Working ",178848,2,45,Working,Working,,600 amp,8,8,49.9 A,,,
+30,MW2153,MW2153,South,Najran,17.44059563,45.34959412,KDRHJNAM,STC,LDN-Building,Green Field,Dual Generator,NA,Yes,Good,900,16H,No,Yes,Working,Huawei,,3,"Pacakage/Split","AC-1 / AC2 EOL / AC-3 Working "," AC1 / AC2 Not Working / AC-3 Working but in Bad Condition ",219841,2,45,Working,Working,,400 amp,8,8,31.5 A,,,
+31,MW2152,MW2152,South,Najran,17.559167,45.42,KDRHJNAL,STC,LDN-Building,Green Field,STB,3006269202,Yes,Good,900,19H,No,Yes,Working,Huawei,,3,"Pacakage/ Split","AC-1 EOL / AC-2 & AC-3 Working ","AC-1 Not Working / AC-2 & AC-3 Working but in Bad Conditioning ",178847,1,25,Working,,,600 amp,8,8,31.6 A,,,
+32,MW037A,MW037A,South,Asir,19.84166718,41.88333511,AHSNRRAA,STC,LDN-Building,Green Field,Dual Generator,NA,Yes,Good,210 / 350,6H 12 Mins ,No,Yes,Working,Huawei,,3,Pacakage,Working ,Working ,,2,75,Working,Working,,300 amp,3,3,39 A,,,
+33,MW024,MW024,South,Asir,18.03303528,42.80088043,ARFDRRAM,STC,LDN-Building,Green Field,STB,30062691834,Yes,Good,900,25 Hours 37 Mins ,No,Yes,Working,Huawei,,4,Pacakage,"AC-1 EOL / AC-2 AC-3 AC-4 Working ","AC-1 Not Working / AC-2 & AC-3 Working but in Bad Condition / AC-4 Working ",34147,1,63,Working,,,600 amp,8,8,12 A,,,
+34,MW022,MW022,South,Najran,17.511111,43.844444,AARHJNAA,STC,LDN-Building,Green Field,STB,30058396103,Yes,Good,900,16H,No,Yes,Working,Huawei,,4,"Pacakage/Floor Standing","AC-1 Working/AC-2 & AC-3 EOL/AC-4 Working ","AC-1 Working but in Bad Condition/AC-2 & AC-3 Not Working/AC-4 Working ",86803,1,59,Working,,,672 amp,9,9,32 A,,,
+35,FKA07,FKA07,South,Asir,19.102833,43.31,SBKHRRAB,STC,LDN-Building,Green Field,STB,30062691807,Yes,Good,400 / 100,"10H 50 Mins , 1Hour 40 Mins ",No,Yes,Working,Huawei,,3,Pacakage,Working ,Working ,,1,63,Working,,,"75 amp , 750 amp","5,3","5,3","7.3, 47 A",178749,,
+36,FKA05,FKA05,South,Asir,19.513528,43.593083,TALTRRAA,STC,LDN-Building,Green Field,STB,30062692018,Yes,Good,900,8H 9 Mins ,No,Yes,Working,Huawei,,3,Pacakage,Working ,Working ,,1,63,Working,,,1400 amp,19,19,102 A,,,
+37,798-00-303,798-00-303,South,Najran,18.07528,46.28556,ZLMAJNAA,STC,LDN-Building,Green Field,Dual Generator,NA,Yes,Good,400 / 100,4H,No,Yes,Working,Huawei,,3,"Pacakage/Split","AC-1 & AC-2 EOL/AC-3 Working "," AC1 & AC2 Not Working/AC-3 Working ",178841,2,45,Working,Working,,600 amp,4,4,13 A,,,
+38,798-00-302,798-00-302,South,Najran,17.3892,45.8061,KDRHJNAO,STC,LDN-Building,Green Field,Dual Generator,NA,Yes,Good,210,9H,No,Yes,Working,Huawei,,3,"Pacakage/Split","AC1 & AC2 EOL/AC-3 Working "," AC1 & AC2 Not Working/AC-3 Working but in Bad Condition ",178
+39,798-00-301,798-00-301,South,Najran,17.38139,46.1675,SHRRJNAI,STC,LDN-Building,Green Field,Dual Generator,NA,Yes,Good,430,12H 30 Mins ,No,Yes,Working,Huawei,,3,"Pacakage/Split","AC1 & AC2  EOL/AC-3 Working "," AC1 & AC2 Not Working/AC-3 Working",178839,2,45,Working,Working,,600 amp,4,4,40.6 A,,,
+40,796-44-000,796-44-000,South,Asir,19.37718964,42.04951859,ASHQRRAA,STC,LDN-shelter,Green Field,STB,30062691692,Yes,Good,210,14H 54Mins ,No,Yes,Working,Huawei,,2,Pacakage,"AC-1 EOL/AC-2 Working ","AC-1 Not Working/AC-2 Working in Bad Condition ",21763,1,100,Working,,,243 amp,9,9,34 A,,,
+41,796-41-000,796-41-000,South,Asir,19.23296738,42.07008362,KDRHRRAA,STC,LDN-shelter,Green Field,STB,30062691683,Yes,Good,400,"18H , 8H",No,Yes,Working,Huawei,,4,Pacakage,"AC-1 & AC-2 EOL/AC-3 AC-4 Working ","AC-1 & AC-2 Not Working/AC-3 AC-4  Working ",21831,1,59,Working,,,"1,170 amp",4,4,35 A,350527,,
+42,796-31-000,796-31-000,South,Asir,18.93472,41.94278,BRYKRRAA,STC,LDN-shelter,Green Field,STB,10052803102,Yes,Good,152 / 256 / 400 ,"15H 40 Mins , 4H 30 Mins ",No,No,NA,Huawei,,5,"Pacakage/Split",Working ,Working ,,,,,,,"300amp , 62.5 amp","4,5","5, 4 ","50,10 A",178750,,
+43,785-00-000,785-00-000,South,Asir,18.56833,43.20556,ARENRR00,STC,LDN-Building,Green Field,STB,10052897851,Yes,Good,1600,8H 20 Mins ,No,Yes,Working,Huawei,,3,Pacakage,Working ,Working ,,1,63,Working,,,1600 amp,16,16,112 A,,,
+44,780-41-000,780-41-000,South,Baha,20.350042,41.282776,HUDABKAA,STC,LDN-shelter,Green Field,STB,30062691601,Yes,Good,210,17H,No,Yes,Working,Huawei,,2,Pacakage,Working ,Working ,,1,50,Working,,,300 amp,3,3,24 A,,,
+45,780-36-000,780-36-000,South,Baha,20.201196,41.077224,MKWHBKAI,STC,LDN-shelter,Green Field,STB,10052884521,Yes,Good,202,12H,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,900 amp,4,4,62 A,,,
+46,780-33-000,780-33-000,South,Baha,20.064404,41.181721,ABLABKAA,STC,LDN-shelter,Green Field,STB,30062691979,Yes,Good,100,14H,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,350 amp,4,4,8 A,,,
+47,780-32-103,780-32-103,South,Baha,20.23532,41.228198,NMAHBKAB,STC,LDN-shelter,Green Field,STB,30062691530,Yes,Good,150,12H,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,780 amp,5,5,6 A,,,
+48,780-32-000,780-32-000,South,Baha,20.215582,41.212548,QARNBKAA,STC,LDN-shelter,Green Field,STB,30062691576,Yes,Good,400,18H,No,Yes,Working,Huawei,,2,Pacakage,Working ,Working ,,1,50,Working,,,630 amp,5,5,9 A,,,
+49,780-11-417,780-11-417,South,Baha,20.491585,41.406445,MTRYBKAA,STC,LDN-shelter,Green Field,STB,30062692009,Yes,Good,152,6H,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,336 amp,3,3,6 A,,,
+50,712-42-000,712-42-000,South,Baha,20.078278,41.366756,ASDABKAA,STC,LDN-shelter,Green Field,STB,30062691521,Yes,Good,1500,24H,No,Yes,Working,Huawei,,2,Pacakage,Working ,Working ,,1,50,Working,,,1600 amp,12,12,25 A,,,
+51,712-41-000,712-41-000,South,Baha,20.10456,41.418998,BSARBKAA,STC,LDN-shelter,Green Field,STB,10052672010,Yes,Good,490,26H,No,Yes,Working,Huawei,,2,Pacakage,Working ,Working ,,1,50,Working,,,900 amp,4,4,7 A,,,
+52,712-35-000,712-35-000,South,Baha,19.83127,41.281961,GNABBKAA,STC,LDN-shelter,Green Field,STB,10052435623,Yes,Good,152,7H,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,300 apm,4,4,7 A,178753,,
+53,708-43-000,708-43-000,South,Najran,17.6111,43.76572,HDADJNAE,STC,MAS-shelter,Green Field,STB,30062691763,Yes,Good,190,12H,No,Yes,Not Workig,Huawei,,3,"Pacakage/Split",Working ,Working ,,1,50,Working,,,280 amp,3,3,13 A,178751,,
+54,708-31-000,708-31-000,South,Najran,17.46803665,44.08219528,MFJHJNAB,STC,MAS-shelter,Green Field,STB,10052851576,Yes,Good,210 / 1500,19H,No,Yes,Working,Huawei,,6,Package,Working ,Working ,,1,200,Working,,,"888 amp , 800 amp","3, 4","3, 4","12 A , 8 A",,,
+55,708-11-213,708-11-213,South,Najran,17.39278,45.58306,KDRHJNAG,STC,LDN-Building,Green Field,Dual Generator,NA,Yes,Good,210,7H,No,Yes,Working,Huawei,,3,"Pacakage/Split","AC1 & AC2  EOL / AC-3 Working "," AC1 & AC2 Not Working / AC-3 Working",178837,2,45,Working,Not Working,302,600 amp,4,4,32 A,,,
+56,708-00-104,708-00-104,South,Najran,18.19361,44.1478,THARJNAD,STC,LDN-shelter,Green Field,STB,10052926953,Yes,Good,152 / 400 ,"6H , 5H",No,Yes,Working,Huawei,,4,Package,Working ,Working ,,1,52,Working,,,"1170 amp , 300 amp","4, 5","4, 5",32 A,178730,,
+57,704-00-233,704-00-233,South,Jizan,16.958897,42.855485,ARSHJZAB,STC,LDN-Building,Green Field,STB,30062691988,Yes,Good,90,4H,No,No,NA,Huawei,,2,Window,Working ,Working ,,,,,,,350 amp,3,3,14 A,,,
+58,703-00-204,703-00-204,South,Jizan,16.90379715,42.7194519,WSYLJZAA,STC,LDN-shelter,Green Field,STB,30062691727,Yes,Weak,90,2H,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,350 amp,3,3,16 A,,,
+59,701-43-000,701-43-000,South,Asir,18.36111,42.46639,ZIDYRRAS,STC,LDN-shelter,Green Field,STB,30062690505,Yes,Good,152,19H 21Mins ,No,Yes,Working,Huawei,,4,Pacakage,Working ,Working ,,1,50,Working,,,300 amp,3,3,9 A,,,
+60,701-42-000,701-42-000,South,Asir,18.34754,42.350048,WSNBRRAA,STC,LDN-shelter,Green Field,STB,10018704582,Yes,Good,500 / 490 ,16H,No,Yes,Working,Huawei,,2,Pacakage,Working ,Working ,,1,50,Working,,,1400 amp,16,16,33 A,,,
+61,ZJZ847,ZJZ847,South,Jizan,16.93411,42.63245,DGARJZAC,Mobily,MAS-shelter,Green Field,STB,NA,No,Weak,95,30 Mins ,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,640 amp,"6,5","6,5","110 A , 66 A",,,
+62,785-14-000,785-14-000,South,Asir,19.537392,43.527546,,STC,MAS-shelter,Green Field,STB,10052861198,Yes,Good,490,13H 15 Mins ,No,Yes,Working,Huawei,,3,Pacakage,Working ,Working ,,1,50,Working,,,600 amp,3,3,39.6 A,,,
+63,Abha Exchange,701-00-000,South,Asir,18.21537018,42.50274277,KSHARR00,STC,TB,Level 2,STB,30062690499,yes,Good,3000 AH,6.844444444,Yes,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+64,Sultan Sebr Exchange,701-11-000,South,Asir,18.15021,42.37047,KMISRRAC,STC,TB,Level 2,STB,30062690480,Yes,Good,1500AH,11.93,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+65,Khamis Mushait Exchange,702-00-000,South,Asir,18.2393,42.8382,KMISRR00,STC,TB,Level 2,STB,30062693178+30062691709,Yes,Good,3000AH,10.30952381,Yes,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+66,Jizan Exchange New,703-41-000,South,Jizan,16.90864372,42.55804825,SHTIJZAB,STC,TB,Level 2,STB,30062691914,Yes,Weak,1500,1.830967742,Yes,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+67,Abu Arish Exchange,704-00-000,South,Jizan,16.95881081,42.8331337,ARSHJZ00,STC,TB,Level 3,STB,30062691871,Yes,Medium,1500,3.7,Yes,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+68,Sabya Exchange,705-00-000,South,Jizan,17.16137123,42.64775467,SBYAJZ00,STC,TB,Level 3,STB,30062691861,Yes,Good,2875,10.2283105,Yes,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+69,Samtah Exchange,706-00-000,South,Jizan,16.59987831,42.94705963,SHMTJZ00,STC,TB,Level 3,STB,30062691899,Yes,Good,2750,13.75714065,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+70,Baysh Exchnge,707-00-000,South,Jizan,17.38153076,42.54550934,BYSHJZ00,STC,TB,Level 3,STB,30062691941,Yes,Good,3000,6.5,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+71,Najran Exchange,708-00-000,South,Najran,17.49085808,44.13738251,SAUDJN00,STC,TB,Level 2,STB,30062691736,Yes,Good,3000AH,6.454891995,Yes,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,Need to fix a new vent hose on the diesel tank-Need to fix a new sump pump-Need to paint the building,
+72,Arrisah Exchange,708-11-000,South,Najran,17.56586647,44.32208252,URAYJNAA,STC,TB,Level 3,STB,30062691997,Yes,Good,1500AH,12.54,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,Need to replace the HVAC system,
+73,Habona Exchange,708-41-000,South,Najran,17.8451767,44.02172852,HBUNJNAB,STC,TB,Level 3,STB,30062691772,Yes,Good,200AH,6.619,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,Need to replace the HVAC system-Need to replace the benning DC pant,
+74,Bisha Exchange Type-22,709-00-000,South,Asir,20.00249672,42.60284805,BSHARR00,STC,TB,Level 3,STB,30062691638,Yes,Medium,1500AH,3.819354839,Yes,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+75,Baljurashy Exchange,711-00-000,South,Baha,19.86108398,41.57277679,JRSHBK00,STC,TB,Level 3,STB,30062691610,Yes,Good,1500AH,4.234265905,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+76,Al Baha Exchange,712-00-000,South,Baha,20.01046753,41.46727371,CITYBK00,STC,TB,Level 2,STB,30062691558,Yes,Good,3000AH,5.324840764,Yes,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+77,Faisaliyah Exchange,715-00-000,South,Najran,17.52666283,44.20116425,RJLAJN00,STC,TB,Level 3,STB,30062691745,Yes,Good,1500AH,6.32,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,Need to replace the HVAC system-Need to replace the both generator and ATS- Need to fix a vent hose on the diesel tank,
+78,Souq Alahad Exhange,718-00-000,South,Jizan,16.68019676,42.97743607,MSYRJZ00,STC,TB,Level 3,STB,30062691960+30062691905,Yes,Good,1500,6.243243243,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+79,Damad Excange,719-00-000,South,Jizan,17.11315346,42.77693558,DMADJZ00,STC,TB,Level 3,STB,30062691932,Yes,Good,1680,19.42571429,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+80,Usran Exchange 5ess,722-00-000,South,Asir,18.04976654,43.06394196,URSNRR00,STC,TB,Level 3,STB,30062691781,Yes,Good,210AH,8.490566038,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+81,Muhail Axe & Sebr Exchange,751-00-000,South,Asir,18.54768944,42.04846954,MHILRR0011W,STC,TB,Level 3,STB,30062691718,Yes,Good,3000AH,11.03816794,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+82,Aldarb Exchange,781-00-000,South,Jizan,17.72694206,42.24723434,DARBJZ00,STC,TB,Level 3,STB,30062691951,Yes,Good,1000,9.094339623,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+83,Rownah Axe & Sebr Exchange,789-00-000,South,Asir,18.23265457,42.79087448,ARFDRR00,STC,TB,Level 3,STB,30062691843,Yes,Good,3000AH,10.26,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+84,Ahad Rofidah Axe& Seb Exchange,789-21-000,South,Asir,18.17232704,42.83049393,ARFDRRAG,STC,TB,Level 3,STB,30062691852,Yes,Good,1500AH,15.09803922,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+85,Sarat Abidah Prx&Sebr Exchange,793-00-000,South,Asir,18.08722687,43.13680649,SABDRR00,STC,TB,Level 3,STB,10104851758,Yes,Good,1500AH,18.2078853,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+86,Sabt Al Alaia Exchange,794-00-000,South,Asir,19.55878067,41.9580574,SALYRR00,STC,TB,Level 3,STB,30062691674,Yes,Good,3000AH,29.65753425,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+87,Al Nimas Exchange Type-22,796-00-000,South,Asir,19.1277256,42.13581085,NMASRR00,STC,TB,Level 3,STB,30062691665+30062691647+30062691656,Yes,Good,3000AH,9.498680739,Yes,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+88,Tanumah Sebr Exchange,796-21-000,South,Asir,18.95492744,42.16795731,TNUMRRAD,STC,TB,Level 3,STB,30062691816,Yes,Good,1500AH,32.42553191,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+89,Ballasmar Axe &Sebr Exchange,796-22-000,South,Asir,18.78244972,42.25166702,TNINRRAA,STC,TB,Level 3,STB,30062691825,Yes,Good,1500AH,28.82269504,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+90,Majardah Sebr Exchange,796-45-000,South,Asir,19.13321877,41.91485596,MJRDRRAD02W,STC,TB,Level 3,STB,30062691629,Yes,Good,1500AH,7.21875,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
+91,Sharorah Exchange,798-00-000,South,Najran,17.48145676,47.11703491,SHRRJN00,STC,TB,Level 3,STB,30062691754,Yes,Good,3000AH,14.94,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,Need to replace the HVAC system,
+92,ZNN701,ZNN701,South,Najran,17.446307,44.07602,,Mobily,MAS-ODU,Green Field,STB,30061499283,Yes,Good,150,3 HR,No,No,Not Available,Ericsson-MAS,,2,Envicool,Working,Working,,0,NA,NA,NA,,30 KW,1,4,68.3 A,,,
+93,ZNN660,ZNN660,South,Najran,17.437023,44.05511,,Mobily,MAS-ODU,Green Field,STB,30061501480,Yes,Good,150,3 HR,No,No,Not Available,Ericsson-MAS,,2,Envicool,Working,Working,,0,NA,NA,NA,,30 KW,1,5,88.1 A,,,
+94,Z86012,Z86012,South,Najran,18.308304,45.495673,,Mobily,MAS-ODU,Green Field,Dual Generator,NA,Yes,Good,100,3 HR,No,Yes,Working,Ericsson-MAS,,2,Envicool,Working,Working,,2,33 KVA,Working,Working,,30 KW,1,3,22.8 A,,,
+95,Z86013,Z86013,South,Najran,18.20569,45.60486,,Mobily,MAS-ODU,Green Field,Dual Generator,NA,Yes,Good,100,3 HR,No,Yes,Working,Ericsson-MAS,,2,Envicool,Working,Working,,2,33 KVA,Working,Working,,30 KW,1,3,33.3 A,,,
+96,ZNN624,ZNN624,South,Najran,17.54283,43.75926,,Mobily,MAS-ODU,Green Field,STB,30061513453,Yes,Good,100,3 HR,No,No,NA,Ericsson-MAS,,2,Envicool,Working,Working,,0,NA,NA,NA,,30 KW,1,3,29 A,,,
+97,ZNN627,ZNN627,South,Najran,17.7962,43.7402,,Mobily,MAS-ODU,Green Field,STB,30061513462,Yes,Good,100,3 HR,No,No,NA,Ericsson-MAS,,2,Envicool,Working,Working,,0,NA,NA,NA,,30 KW,1,4,26 A,,,
+98,ZBH811,ZBH811,South,Baha,20.0971,41.4253,,Mobily,MAS-Shelter,Green Field,STB,WSE2020807129461,Yes,Medium,150,2 HR,No,No,NA,Ericsson-MAS,,2,Zamil,Working,Working,,0,NA,NA,NA,,24 KW,1,5, 150 A,,,
+99,ZBH822,ZBH822,South,Baha,19.994399,41.519642,,Mobily,MAS-Shelter,Green Field,STB,SMR2220621006277,Yes,Medium,210,2 HR,No,No,NA,Ericsson-MAS,,2,Bard,Working,Working,,0,NA,NA,NA,,27 KW,1,7, 157 A,,,
+100,ZBH841,ZBH841,South,Baha,19.859955,41.557825,,Mobily,MAS-Shelter,Green Field,STB,SMR2420628002168,Yes,Good,210,3 HR,No,No,NA,Ericsson-MAS,,2,Bard,Working,Working,,0,NA,NA,NA,,27 KW,1,7,177 A,,,
+101,ZBH855,ZBH855,South,Baha,20.06523,41.45507,,Zain,MAS-Shelter,Green Field,STB,SMR2220621008800,Yes,Good,200,3 HR,No,No,NA,Ericsson-MAS,,2,Bard,Working,Working,,0,NA,NA,NA,,32 KW,1,5, 143.4 A,,,
+102,ZBH984,ZBH984,South,Baha,20.015331,41.488906,,Mobily,MAS-Shelter,Green Field,STB,SMR2220621008616,Yes,Medium,200,3 HR,No,No,NA,Ericsson-MAS,,2,Zamil,Working,Working,,0,NA,NA,NA,,32 KW,1,6,139 A,,,
+103,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+104,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+105,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+106,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+107,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+`;
+ 
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',').map(h => h.trim());
+  return lines.slice(1).map(line => {
+    const values = line.split(',').map(v => v.trim());
+   const obj = {};
+    headers.forEach((h, i) => obj[h] = values[i] || '');
+    return obj;
+  });
+}
+ 
+const db = parseCSV(rawData);
+ 
+function search() {
+  const query = document.getElementById('searchInput').value.trim().toLowerCase();
+  const match = db.find(row =>
+    row['Site Name'].toLowerCase() === query || row['Site ID'].toLowerCase() === query
+  );
+ 
+  if (!match) {
+    document.getElementById('result').innerHTML = '<p>No site found.</p>';
+    return;
+  }
+ 
+  document.getElementById('result').innerHTML = `
+    <div class="section">
+      <h3>Basic Site Information</h3>
+      ${renderField(match, 'Site Name')}
+      ${renderField(match, 'Site ID')}
+      ${renderField(match, 'Region')}
+      ${renderField(match, 'District')}
+      ${renderField(match, 'Latitude')}
+      ${renderField(match, 'Longitude')}
+      ${renderField(match, 'Site CLLI')}
+      ${renderField(match, 'Ownership')}
+      ${renderField(match, 'Site Type')}
+      ${renderField(match, 'Site Category')}
+    </div>
+ 
+    <div class="section">
+      <h3>Power & Equipment Details</h3>
+      ${renderField(match, 'Power Supply Type')}
+      ${renderField(match, 'SCECO Account No.')}
+      ${renderField(match, 'Battery Availability')}
+      ${renderField(match, 'Battery Status')}
+      ${renderField(match, 'Battery Capacity in Hrs')}
+      ${renderField(match, 'Back up time in Hours')}
+      ${renderField(match, 'UPS Availability')}
+      ${renderField(match, 'ATS Availability')}
+      ${renderField(match, 'ATS Status')}
+      ${renderField(match, 'MSP')}
+      ${renderField(match, 'BB CAPEX')}
+      ${renderField(match, 'Number of AC')}
+      ${renderField(match, 'AC Type')}
+      ${renderField(match, 'AC Condition (Working / Not Working)')}
+      ${renderField(match, 'AC Condition')}
+      ${renderField(match, 'AC CAPEX Number (BPM)')}
+      ${renderField(match, 'Number of Generator')}
+      ${renderField(match, 'Generator Capacity')}
+      ${renderField(match, 'GEN1 Status')}
+      ${renderField(match, 'GEN2 Status')}
+      ${renderField(match, 'Generator CAPEX Number (BPM)')}
+      ${renderField(match, 'DC System Capacity')}
+      ${renderField(match, 'Number of Rectifiers')}
+      ${renderField(match, 'Number of working Rectifiers')}
+      ${renderField(match, 'Site DC Total Capacity')}
+      ${renderField(match, 'DC System CAPEX Number (BPM)')}
+      ${renderField(match, 'Rehab. Pending Issues')}
+      ${renderField(match, 'Remarks (Issues)')}
+    </div>
+  `;
+}
+ 
+function renderField(obj, key) {
+  return `<div class="field"><span class="label">${key}:</span> ${obj[key] || '-'}</div>`;
+}
+ 
+function clearResult() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('result').innerHTML = '';
+}
+</script>
+ 
+</body>
+</html>
