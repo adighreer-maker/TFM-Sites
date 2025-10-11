@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Site Information Search Interface</title>
+  <title>Site Information Search Interface & Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * {
       margin: 0;
@@ -21,7 +22,7 @@
     }
 
     .container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
     }
 
@@ -41,6 +42,42 @@
     .header p {
       font-size: 1.1rem;
       opacity: 0.9;
+    }
+
+    .nav-tabs {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 30px;
+      gap: 10px;
+    }
+
+    .nav-tab {
+      padding: 12px 25px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 25px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-tab.active,
+    .nav-tab:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
     }
 
     .search-container {
@@ -143,6 +180,77 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+      margin-bottom: 30px;
+    }
+
+    .dashboard-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .dashboard-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .dashboard-card h3 {
+      font-size: 1.5rem;
+      color: #2c3e50;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid #667eea;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dashboard-card h3 i {
+      color: #667eea;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin-top: 20px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 15px;
+      border-left: 4px solid #667eea;
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #667eea;
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: #6c757d;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .section {
@@ -279,6 +387,14 @@
       .header h1 {
         font-size: 2rem;
       }
+
+      .nav-tabs {
+        flex-wrap: wrap;
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     .loading {
@@ -309,36 +425,170 @@
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .summary-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 25px;
+      text-align: center;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .summary-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .summary-card i {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      color: #667eea;
+    }
+
+    .summary-card .number {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+
+    .summary-card .label {
+      color: #6c757d;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .debug-info {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 10px;
+      font-family: monospace;
+      font-size: 12px;
+      border-left: 4px solid #667eea;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1><i class="fas fa-satellite-dish"></i> Site Information Search</h1>
-      <p>Advanced Telecommunications Infrastructure Database</p>
+      <h1><i class="fas fa-satellite-dish"></i> Site Information System</h1>
+      <p>Advanced Telecommunications Infrastructure Database & Analytics</p>
     </div>
 
-    <div class="search-container">
-      <div class="search-box">
-        <div class="input-group">
-          <i class="fas fa-search"></i>
-          <input type="text" id="searchInput" placeholder="Enter site name or ID..." onkeypress="handleEnter(event)" />
+    <div class="nav-tabs">
+      <div class="nav-tab active" onclick="switchTab('search')">
+        <i class="fas fa-search"></i> Search Sites
+      </div>
+      <div class="nav-tab" onclick="switchTab('dashboard')">
+        <i class="fas fa-chart-bar"></i> Dashboard
+      </div>
+    </div>
+
+    <!-- Search Tab Content -->
+    <div id="searchTab" class="tab-content active">
+      <div class="search-container">
+        <div class="search-box">
+          <div class="input-group">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Enter site name, site ID, or district..." onkeypress="handleEnter(event)" />
+          </div>
+          <button class="btn btn-primary" onclick="search()">
+            <i class="fas fa-search"></i> Search
+          </button>
+          <button class="btn btn-secondary" onclick="clearResult()">
+            <i class="fas fa-times"></i> Clear
+          </button>
         </div>
-        <button class="btn btn-primary" onclick="search()">
-          <i class="fas fa-search"></i> Search
-        </button>
-        <button class="btn btn-secondary" onclick="clearResult()">
-          <i class="fas fa-times"></i> Clear
-        </button>
+
+        <div class="note">
+          <i class="fas fa-database"></i>
+          Search by Site Name, Site ID, or District. Database contains <span id="searchDbCount">0</span> active sites.
+        </div>
       </div>
 
-      <div class="note">
-        <i class="fas fa-database"></i>
-        Database loaded. Site information available for search.
-      </div>
+      <div id="result"></div>
     </div>
 
-    <div id="result"></div>
+    <!-- Dashboard Tab Content -->
+    <div id="dashboardTab" class="tab-content">
+      <div class="summary-cards">
+        <div class="summary-card">
+          <i class="fas fa-broadcast-tower"></i>
+          <div class="number" id="totalSites">0</div>
+          <div class="label">Total Sites</div>
+        </div>
+        <div class="summary-card">
+          <i class="fas fa-map"></i>
+          <div class="number" id="totalDistricts">0</div>
+          <div class="label">Districts</div>
+        </div>
+        <div class="summary-card">
+          <i class="fas fa-building"></i>
+          <div class="number" id="totalOperators">0</div>
+          <div class="label">Operators</div>
+        </div>
+        <div class="summary-card">
+          <i class="fas fa-bolt"></i>
+          <div class="number" id="activePower">0</div>
+          <div class="label">Active Power Systems</div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="dashboard-card">
+          <h3><i class="fas fa-plug"></i> Power Supply Distribution</h3>
+          <div class="chart-container">
+            <canvas id="powerSupplyChart"></canvas>
+          </div>
+        </div>
+
+        <div class="dashboard-card">
+          <h3><i class="fas fa-network-wired"></i> MSP Distribution</h3>
+          <div class="chart-container">
+            <canvas id="mspChart"></canvas>
+          </div>
+        </div>
+
+        <div class="dashboard-card">
+          <h3><i class="fas fa-map-marker-alt"></i> Sites by District</h3>
+          <div class="chart-container">
+            <canvas id="districtChart"></canvas>
+          </div>
+        </div>
+
+        <div class="dashboard-card">
+          <h3><i class="fas fa-battery-half"></i> Battery Status Overview</h3>
+          <div class="chart-container">
+            <canvas id="batteryChart"></canvas>
+          </div>
+        </div>
+
+        <div class="dashboard-card">
+          <h3><i class="fas fa-building"></i> Ownership Distribution</h3>
+          <div class="chart-container">
+            <canvas id="ownershipChart"></canvas>
+          </div>
+        </div>
+
+        <div class="dashboard-card">
+          <h3><i class="fas fa-cogs"></i> Site Type Distribution</h3>
+          <div class="chart-container">
+            <canvas id="siteTypeChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -349,14 +599,14 @@
 
 1,ZMJ025,ZMJ025,South,Asir,18.0708,42.5093,ANIQRRAB,Mobily,MAS-shelter,Green Field,STB,NA,Yes,Weak,150,25 Mins ,No,No,NA,Huawei,178914,2,Pacakage,Working ,Working ,,,,,,,245 amp,3,3,41 A,380990,,
 2,HWYHBKAA,HWYHBKAA,South,Baha,20.011983,41.466263,HWYHBKAA,Zain,LDN-shelter,Roof Top,STB,NA,Yes,Good,NA,NA,No,No,NA,Huawei,,2,Split,Working ,Working ,,,,,,,NA,NA,NA,NA,,,Rectifier & BB NA
-3,FSHS01,FSHS01,South,Najran,18.380528,45.110417,ZLMAJNAB ,STC,LDN-shelter,Green Field,STB,10052697037,Yes,Good,200 / 500,"6H , 45 Mins ",No,Yes,Working,Huawei,178716,4,Package,Working ,Working ,,1,62,Working,,,"600 amp ,350 amp","8, 14","8, 14","50 A , 84 A",178878,,BB Good/ Weak
+3,FSHS01,FSHS01,South,Najran,18.380528,45.110417,ZLMAJNAB ,STC,LDN-shelter,Green Field,STB,10052697037,Yes,Good,200 / 500,"6H 45 Mins ",No,Yes,Working,Huawei,178716,4,Package,Working ,Working ,,1,62,Working,,,"600 amp /50 amp","8.14","8.14","50 A / 84 A",178878,,BB Good/ Weak
 4,752-11-000,752-11-000,South,Asir,18.65972,42.4375,SBHARRAB,STC,LDN-shelter,Green Field,STB,10052824711,Yes,Dead,400,0,No,No,NA,Huawei,86998,2,Pacakage,Working ,Working ,,,,,,,900 amp,4,4,18 A,,,
-5,752-00-000,752-00-000,South,Asir,18.64417076,42.31469727,SBHARR00,STC,LDN-shelter,Green Field,STB,30062691923,Yes,Good,350 / 400 / 210,"19H 30Mins , 0 , 2H 30 Mins ",No,Yes,Working,Huawei,127638,5,"Pacakage/ Split","AC-1 & AC-2 EOL / AC-3 AC-4 AC-5 Working ","AC-1 & AC-2 Not Working / AC-3 AC-4 AC-5 Working ",21762,1,100,Working,,,"1,170 amp , 243 amp","6,9","6,9","30,18 A",,,BB Good/Weak
+5,752-00-000,752-00-000,South,Asir,18.64417076,42.31469727,SBHARR00,STC,LDN-shelter,Green Field,STB,30062691923,Yes,Good,350 / 400 / 210,"19H 30Mins / 0 / 2H 30 Mins ",No,Yes,Working,Huawei,127638,5,"Pacakage/ Split","AC-1 & AC-2 EOL / AC-3 AC-4 AC-5 Working ","AC-1 & AC-2 Not Working / AC-3 AC-4 AC-5 Working ",21762,1,100,Working,,,"1.170 amp / 243 amp","9","6","30.18 A",,,BB Good/Weak
 6,712-36-000,712-36-000,South,Baha,19.971721,41.362169,QURABKAC,STC,LDN-shelter,Green Field,STB,30062691469,Yes,Good,152,3H,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,336 amp,2,2,15 A,,,
 7,795-31-312,795-31-312,South,Asir,17.60638,43.09222,JLTMJZAA,STC,LDN-shelter,Green Field,STB,10104317301,Yes,Good,200,16H,No,Yes,Working,Huawei,,2,Pacakage,Working ,Working ,,1,60,Working,,,1250 amp,15,15,29 A,,,
 8,708-00-311,708-00-311,South,Najran,17.84556,44.02111,HBUNJNAA,STC,LDN-Building,Green Field,Dual Generator,NA,Yes,Dead,152,0,No,Yes,Working,Huawei,86854,2,Package,Working ,Working ,,2,76,Not Working,Working,173452,500 amp,2,2,18 A,Pending,,
 9,Z7D012,Z7D012,South,Asir,18.0708,42.5093,FRSHRRAH,Mobily,MAS-shelter,Green Field,STB,NA,No,Stolen,NA,0,No,No,NA,Huawei,168066,2,Pacakage,Working ,Working ,,,,,,,222 amp,4,4,41 A,179355,,
-10,ZNN886,ZNN886,South,Najran,17.55470085,44.70915985,NJRNJNDC,Mobily,MAS-shelter,Green Field,STB,NA,Yes,Dead,190,0,No,No,NA,Huawei,33294,2,Pacakage,Working ,Working ,,,,,,,"600 amp , 600 amp","5 , 6","5 , 6","109 A , 80 A",179356,,
+10,ZNN886,ZNN886,South,Najran,17.55470085,44.70915985,NJRNJNDC,Mobily,MAS-shelter,Green Field,STB,NA,Yes,Dead,190,0,No,No,NA,Huawei,33294,2,Pacakage,Working ,Working ,,,,,,,"600 amp","6","5","109 A / 80 A",179356,,
 11,ZJZ718,ZJZ718,South,Jizan,16.91199,42.92315,HRJHJZAB,Mobily,MAS-shelter,Green Field,STB,NA,Yes,Good,200,4H 30 Mins ,No,No,NA,Huawei,189513,2,Pacakage,Working ,Working ,,,,,,,600 amp,7,7,135 A,,,
 12,ZNM060,ZNM060,South,Asir,19.2192,42.081,AIRQRRAE,Mobily,MAS-shelter,Green Field,STB,NA,Yes,Good,170,3H 10 Mins ,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,600 amp,6,6,109 A,,,
 13,ZJZ941,ZJZ941,South,Jizan,17.26795,43.12867,SAGLJZAB,Mobily,MAS-shelter,Green Field,STB,NA,Yes,Good,200,4H,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,600 amp,7,7,95 A,,,
@@ -381,18 +631,18 @@
 32,MW037A,MW037A,South,Asir,19.84166718,41.88333511,AHSNRRAA,STC,LDN-Building,Green Field,Dual Generator,NA,Yes,Good,210 / 350,6H 12 Mins ,No,Yes,Working,Huawei,,3,Pacakage,Working ,Working ,,2,75,Working,Working,,300 amp,3,3,39 A,,,
 33,MW024,MW024,South,Asir,18.03303528,42.80088043,ARFDRRAM,STC,LDN-Building,Green Field,STB,30062691834,Yes,Good,900,25 Hours 37 Mins ,No,Yes,Working,Huawei,,4,Pacakage,"AC-1 EOL / AC-2 AC-3 AC-4 Working ","AC-1 Not Working / AC-2 & AC-3 Working but in Bad Condition / AC-4 Working ",34147,1,63,Working,,,600 amp,8,8,12 A,,,
 34,MW022,MW022,South,Najran,17.511111,43.844444,AARHJNAA,STC,LDN-Building,Green Field,STB,30058396103,Yes,Good,900,16H,No,Yes,Working,Huawei,,4,"Pacakage/Floor Standing","AC-1 Working/AC-2 & AC-3 EOL/AC-4 Working ","AC-1 Working but in Bad Condition/AC-2 & AC-3 Not Working/AC-4 Working ",86803,1,59,Working,,,672 amp,9,9,32 A,,,
-35,FKA07,FKA07,South,Asir,19.102833,43.31,SBKHRRAB,STC,LDN-Building,Green Field,STB,30062691807,Yes,Good,400 / 100,"10H 50 Mins , 1Hour 40 Mins ",No,Yes,Working,Huawei,,3,Pacakage,Working ,Working ,,1,63,Working,,,"75 amp , 750 amp","5,3","5,3","7.3, 47 A",178749,,
+35,FKA07,FKA07,South,Asir,19.102833,43.31,SBKHRRAB,STC,LDN-Building,Green Field,STB,30062691807,Yes,Good,400 / 100,"10H 50 Mins / 1Hour 40 Mins ",No,Yes,Working,Huawei,,3,Pacakage,Working ,Working ,,1,63,Working,,,"75 amp/750 amp","5","3","7.3/47 A",178749,,
 36,FKA05,FKA05,South,Asir,19.513528,43.593083,TALTRRAA,STC,LDN-Building,Green Field,STB,30062692018,Yes,Good,900,8H 9 Mins ,No,Yes,Working,Huawei,,3,Pacakage,Working ,Working ,,1,63,Working,,,1400 amp,19,19,102 A,,,
 37,798-00-303,798-00-303,South,Najran,18.07528,46.28556,ZLMAJNAA,STC,LDN-Building,Green Field,Dual Generator,NA,Yes,Good,400 / 100,4H,No,Yes,Working,Huawei,,3,"Pacakage/Split","AC-1 & AC-2 EOL/AC-3 Working "," AC1 & AC2 Not Working/AC-3 Working ",178841,2,45,Working,Working,,600 amp,4,4,13 A,,,
 38,798-00-302,798-00-302,South,Najran,17.3892,45.8061,KDRHJNAO,STC,LDN-Building,Green Field,Dual Generator,NA,Yes,Good,210,9H,No,Yes,Working,Huawei,,3,"Pacakage/Split","AC1 & AC2 EOL/AC-3 Working "," AC1 & AC2 Not Working/AC-3 Working but in Bad Condition ",178
 39,798-00-301,798-00-301,South,Najran,17.38139,46.1675,SHRRJNAI,STC,LDN-Building,Green Field,Dual Generator,NA,Yes,Good,430,12H 30 Mins ,No,Yes,Working,Huawei,,3,"Pacakage/Split","AC1 & AC2  EOL/AC-3 Working "," AC1 & AC2 Not Working/AC-3 Working",178839,2,45,Working,Working,,600 amp,4,4,40.6 A,,,
 40,796-44-000,796-44-000,South,Asir,19.37718964,42.04951859,ASHQRRAA,STC,LDN-shelter,Green Field,STB,30062691692,Yes,Good,210,14H 54Mins ,No,Yes,Working,Huawei,,2,Pacakage,"AC-1 EOL/AC-2 Working ","AC-1 Not Working/AC-2 Working in Bad Condition ",21763,1,100,Working,,,243 amp,9,9,34 A,,,
 41,796-41-000,796-41-000,South,Asir,19.23296738,42.07008362,KDRHRRAA,STC,LDN-shelter,Green Field,STB,30062691683,Yes,Good,400,"18H , 8H",No,Yes,Working,Huawei,,4,Pacakage,"AC-1 & AC-2 EOL/AC-3 AC-4 Working ","AC-1 & AC-2 Not Working/AC-3 AC-4  Working ",21831,1,59,Working,,,"1,170 amp",4,4,35 A,350527,,
-42,796-31-000,796-31-000,South,Asir,18.93472,41.94278,BRYKRRAA,STC,LDN-shelter,Green Field,STB,10052803102,Yes,Good,152 / 256 / 400 ,"15H 40 Mins , 4H 30 Mins ",No,No,NA,Huawei,,5,"Pacakage/Split",Working ,Working ,,,,,,,"300amp , 62.5 amp","4,5","5, 4 ","50,10 A",178750,,
+42,796-31-000,796-31-000,South,Asir,18.93472,41.94278,BRYKRRAA,STC,LDN-shelter,Green Field,STB,10052803102,Yes,Good,152 / 256 / 400 ,"15H 40 Mins / 4H 30 Mins ",No,No,NA,Huawei,,5,"Pacakage/Split",Working ,Working ,,,,,,,"300amp / 62.5 amp","5","4 ","50/10 A",178750,,
 43,785-00-000,785-00-000,South,Asir,18.56833,43.20556,ARENRR00,STC,LDN-Building,Green Field,STB,10052897851,Yes,Good,1600,8H 20 Mins ,No,Yes,Working,Huawei,,3,Pacakage,Working ,Working ,,1,63,Working,,,1600 amp,16,16,112 A,,,
 44,780-41-000,780-41-000,South,Baha,20.350042,41.282776,HUDABKAA,STC,LDN-shelter,Green Field,STB,30062691601,Yes,Good,210,17H,No,Yes,Working,Huawei,,2,Pacakage,Working ,Working ,,1,50,Working,,,300 amp,3,3,24 A,,,
 45,780-36-000,780-36-000,South,Baha,20.201196,41.077224,MKWHBKAI,STC,LDN-shelter,Green Field,STB,10052884521,Yes,Good,202,12H,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,900 amp,4,4,62 A,,,
-46,780-33-000,780-33-000,South,Baha,20.064404,41.181721,ABLABKAA,STC,LDN-shelter,Green Field,STB,30062691979,Yes,Good,100,14H,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,350 amp,4,4,8 A,,,
+46,780-33-000,780-33-000,South,Baha,20.064404,41.181721,ABLABKAA,STC,LDN-shelter,Green Field,STB,30062691979,Yes,Good,100,14H,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,350 amp,5,4,8 A,,,
 47,780-32-103,780-32-103,South,Baha,20.23532,41.228198,NMAHBKAB,STC,LDN-shelter,Green Field,STB,30062691530,Yes,Good,150,12H,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,780 amp,5,5,6 A,,,
 48,780-32-000,780-32-000,South,Baha,20.215582,41.212548,QARNBKAA,STC,LDN-shelter,Green Field,STB,30062691576,Yes,Good,400,18H,No,Yes,Working,Huawei,,2,Pacakage,Working ,Working ,,1,50,Working,,,630 amp,5,5,9 A,,,
 49,780-11-417,780-11-417,South,Baha,20.491585,41.406445,MTRYBKAA,STC,LDN-shelter,Green Field,STB,30062692009,Yes,Good,152,6H,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,336 amp,3,3,6 A,,,
@@ -400,7 +650,7 @@
 51,712-41-000,712-41-000,South,Baha,20.10456,41.418998,BSARBKAA,STC,LDN-shelter,Green Field,STB,10052672010,Yes,Good,490,26H,No,Yes,Working,Huawei,,2,Pacakage,Working ,Working ,,1,50,Working,,,900 amp,4,4,7 A,,,
 52,712-35-000,712-35-000,South,Baha,19.83127,41.281961,GNABBKAA,STC,LDN-shelter,Green Field,STB,10052435623,Yes,Good,152,7H,No,No,NA,Huawei,,2,Pacakage,Working ,Working ,,,,,,,300 apm,4,4,7 A,178753,,
 53,708-43-000,708-43-000,South,Najran,17.6111,43.76572,HDADJNAE,STC,MAS-shelter,Green Field,STB,30062691763,Yes,Good,190,12H,No,Yes,Not Workig,Huawei,,3,"Pacakage/Split",Working ,Working ,,1,50,Working,,,280 amp,3,3,13 A,178751,,
-54,708-31-000,708-31-000,South,Najran,17.46803665,44.08219528,MFJHJNAB,STC,MAS-shelter,Green Field,STB,10052851576,Yes,Good,210 / 1500,19H,No,Yes,Working,Huawei,,6,Package,Working ,Working ,,1,200,Working,,,"888 amp , 800 amp","3, 4","3, 4","12 A , 8 A",,,
+54,708-31-000,708-31-000,South,Najran,17.46803665,44.08219528,MFJHJNAB,STC,MAS-shelter,Green Field,STB,10052851576,Yes,Good,210 / 1500,19H,No,Yes,Working,Huawei,,6,Package,Working ,Working ,,1,200,Working,,,"888 amp / 800 amp","4","3","12 A / 8 A",,,
 55,708-11-213,708-11-213,South,Najran,17.39278,45.58306,KDRHJNAG,STC,LDN-Building,Green Field,Dual Generator,NA,Yes,Good,210,7H,No,Yes,Working,Huawei,,3,"Pacakage/Split","AC1 & AC2  EOL / AC-3 Working "," AC1 & AC2 Not Working / AC-3 Working",178837,2,45,Working,Not Working,302,600 amp,4,4,32 A,,,
 56,708-00-104,708-00-104,South,Najran,18.19361,44.1478,THARJNAD,STC,LDN-shelter,Green Field,STB,10052926953,Yes,Good,152 / 400 ,"6H , 5H",No,Yes,Working,Huawei,,4,Package,Working ,Working ,,1,52,Working,,,"1170 amp , 300 amp","4, 5","4, 5",32 A,178730,,
 57,704-00-233,704-00-233,South,Jizan,16.958897,42.855485,ARSHJZAB,STC,LDN-Building,Green Field,STB,30062691988,Yes,Good,90,4H,No,No,NA,Huawei,,2,Window,Working ,Working ,,,,,,,350 amp,3,3,14 A,,,
@@ -438,131 +688,598 @@
 89,Ballasmar Axe &Sebr Exchange,796-22-000,South,Asir,18.78244972,42.25166702,TNINRRAA,STC,TB,Level 3,STB,30062691825,Yes,Good,1500AH,28.82269504,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
 90,Majardah Sebr Exchange,796-45-000,South,Asir,19.13321877,41.91485596,MJRDRRAD02W,STC,TB,Level 3,STB,30062691629,Yes,Good,1500AH,7.21875,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,,
 91,Sharorah Exchange,798-00-000,South,Najran,17.48145676,47.11703491,SHRRJN00,STC,TB,Level 3,STB,30062691754,Yes,Good,3000AH,14.94,No,Yes,Working,Ericsson,,,,,,,,,,,,,,,,,Need to replace the HVAC system,
-92,ZNN701,ZNN701,South,Najran,17.446307,44.07602,,Mobily,MAS-ODU,Green Field,STB,30061499283,Yes,Good,150,3 HR,No,No,Not Available,Ericsson-MAS,,2,Envicool,Working,Working,,0,NA,NA,NA,,30 KW,1,4,68.3 A,,,
-93,ZNN660,ZNN660,South,Najran,17.437023,44.05511,,Mobily,MAS-ODU,Green Field,STB,30061501480,Yes,Good,150,3 HR,No,No,Not Available,Ericsson-MAS,,2,Envicool,Working,Working,,0,NA,NA,NA,,30 KW,1,5,88.1 A,,,
-94,Z86012,Z86012,South,Najran,18.308304,45.495673,,Mobily,MAS-ODU,Green Field,Dual Generator,NA,Yes,Good,100,3 HR,No,Yes,Working,Ericsson-MAS,,2,Envicool,Working,Working,,2,33 KVA,Working,Working,,30 KW,1,3,22.8 A,,,
-95,Z86013,Z86013,South,Najran,18.20569,45.60486,,Mobily,MAS-ODU,Green Field,Dual Generator,NA,Yes,Good,100,3 HR,No,Yes,Working,Ericsson-MAS,,2,Envicool,Working,Working,,2,33 KVA,Working,Working,,30 KW,1,3,33.3 A,,,
-96,ZNN624,ZNN624,South,Najran,17.54283,43.75926,,Mobily,MAS-ODU,Green Field,STB,30061513453,Yes,Good,100,3 HR,No,No,NA,Ericsson-MAS,,2,Envicool,Working,Working,,0,NA,NA,NA,,30 KW,1,3,29 A,,,
-97,ZNN627,ZNN627,South,Najran,17.7962,43.7402,,Mobily,MAS-ODU,Green Field,STB,30061513462,Yes,Good,100,3 HR,No,No,NA,Ericsson-MAS,,2,Envicool,Working,Working,,0,NA,NA,NA,,30 KW,1,4,26 A,,,
-98,ZBH811,ZBH811,South,Baha,20.0971,41.4253,,Mobily,MAS-Shelter,Green Field,STB,WSE2020807129461,Yes,Medium,150,2 HR,No,No,NA,Ericsson-MAS,,2,Zamil,Working,Working,,0,NA,NA,NA,,24 KW,1,5, 150 A,,,
-99,ZBH822,ZBH822,South,Baha,19.994399,41.519642,,Mobily,MAS-Shelter,Green Field,STB,SMR2220621006277,Yes,Medium,210,2 HR,No,No,NA,Ericsson-MAS,,2,Bard,Working,Working,,0,NA,NA,NA,,27 KW,1,7, 157 A,,,
-100,ZBH841,ZBH841,South,Baha,19.859955,41.557825,,Mobily,MAS-Shelter,Green Field,STB,SMR2420628002168,Yes,Good,210,3 HR,No,No,NA,Ericsson-MAS,,2,Bard,Working,Working,,0,NA,NA,NA,,27 KW,1,7,177 A,,,
-101,ZBH855,ZBH855,South,Baha,20.06523,41.45507,,Zain,MAS-Shelter,Green Field,STB,SMR2220621008800,Yes,Good,200,3 HR,No,No,NA,Ericsson-MAS,,2,Bard,Working,Working,,0,NA,NA,NA,,32 KW,1,5, 143.4 A,,,
-102,ZBH984,ZBH984,South,Baha,20.015331,41.488906,,Mobily,MAS-Shelter,Green Field,STB,SMR2220621008616,Yes,Medium,200,3 HR,No,No,NA,Ericsson-MAS,,2,Zamil,Working,Working,,0,NA,NA,NA,,32 KW,1,6,139 A,,,
-103,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-104,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-105,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-106,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-107,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-`;
+92,ZNN701,ZNN701,South,Najran,17.446307,44.07602,,Mobily,MAS-ODU,Green Field,STB,30061499283,Yes,Good,150,3 HR,No,No,Not Available,Ericsson-MAS,,2,Envicool,Working,Working,,0,NA,NA,NA,,30 KW,4,4,68.3 A,,,
+93,ZNN660,ZNN660,South,Najran,17.437023,44.05511,,Mobily,MAS-ODU,Green Field,STB,30061501480,Yes,Good,150,3 HR,No,No,Not Available,Ericsson-MAS,,2,Envicool,Working,Working,,0,NA,NA,NA,,30 KW,5,5,88.1 A,,,
+94,Z86012,Z86012,South,Najran,18.308304,45.495673,,Mobily,MAS-ODU,Green Field,Dual Generator,NA,Yes,Good,100,3 HR,No,Yes,Working,Ericsson-MAS,,2,Envicool,Working,Working,,2,33 KVA,Working,Working,,30 KW,3,3,22.8 A,,,
+95,Z86013,Z86013,South,Najran,18.20569,45.60486,,Mobily,MAS-ODU,Green Field,Dual Generator,NA,Yes,Good,100,3 HR,No,Yes,Working,Ericsson-MAS,,2,Envicool,Working,Working,,2,33 KVA,Working,Working,,30 KW,3,3,33.3 A,,,
+96,ZNN624,ZNN624,South,Najran,17.54283,43.75926,,Mobily,MAS-ODU,Green Field,STB,30061513453,Yes,Good,100,3 HR,No,No,NA,Ericsson-MAS,,2,Envicool,Working,Working,,0,NA,NA,NA,,30 KW,3,3,29 A,,,
+97,ZNN627,ZNN627,South,Najran,17.7962,43.7402,,Mobily,MAS-ODU,Green Field,STB,30061513462,Yes,Good,100,3 HR,No,No,NA,Ericsson-MAS,,2,Envicool,Working,Working,,0,NA,NA,NA,,30 KW,4,4,26 A,,,
+98,ZBH811,ZBH811,South,Baha,20.0971,41.4253,,Mobily,MAS-Shelter,Green Field,STB,WSE2020807129461,Yes,Medium,150,2 HR,No,No,NA,Ericsson-MAS,,2,Zamil,Working,Working,,0,NA,NA,NA,,24 KW,5,5, 150 A,,,
+99,ZBH822,ZBH822,South,Baha,19.994399,41.519642,,Mobily,MAS-Shelter,Green Field,STB,SMR2220621006277,Yes,Medium,210,2 HR,No,No,NA,Ericsson-MAS,,2,Bard,Working,Working,,0,NA,NA,NA,,27 KW,7,7, 157 A,,,
+100,ZBH841,ZBH841,South,Baha,19.859955,41.557825,,Mobily,MAS-Shelter,Green Field,STB,SMR2420628002168,Yes,Good,210,3 HR,No,No,NA,Ericsson-MAS,,2,Bard,Working,Working,,0,NA,NA,NA,,27 KW,7,7,177 A,,,
+101,ZBH855,ZBH855,South,Baha,20.06523,41.45507,,Zain,MAS-Shelter,Green Field,STB,SMR2220621008800,Yes,Good,200,3 HR,No,No,NA,Ericsson-MAS,,2,Bard,Working,Working,,0,NA,NA,NA,,32 KW,5,5, 143.4 A,,,
+102,ZBH984,ZBH984,South,Baha,20.015331,41.488906,,Mobily,MAS-Shelter,Green Field,STB,SMR2220621008616,Yes,Medium,200,3 HR,No,No,NA,Ericsson-MAS,,2,Zamil,Working,Working,,0,NA,NA,NA,,32 KW,6,6,139 A,,,`;
 
+    let charts = {};
+    let db = [];
+
+    // Enhanced CSV parsing function that properly ignores blanks
     function parseCSV(text) {
-      const lines = text.trim().split('\n').filter(line => line.trim() && !line.match(/^,+$/));
+      console.log("Starting CSV parsing...");
+
+      const lines = text.trim().split('\n');
+      console.log(`Total lines found: ${lines.length}`);
+
+      // Get headers from first line
       const headers = lines[0].split(',').map(h => h.trim());
-      return lines.slice(1).map(line => {
+      console.log(`Headers found: ${headers.length}`, headers.slice(0, 5));
+
+      const validRows = [];
+
+      // Process each line starting from line 1 (skip header)
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+
+        // Skip completely empty lines
+        if (!line) {
+          continue;
+        }
+
+        // Skip lines that are just commas
+        if (line.match(/^,+$/)) {
+          continue;
+        }
+
         const values = line.split(',').map(v => v.trim());
+
+        // Skip rows where essential fields are empty
+        const siteName = values[1] ? values[1].trim() : '';
+        const siteId = values[2] ? values[2].trim() : '';
+
+        if (!siteName && !siteId) {
+          continue;
+        }
+
+        // Create row object
         const obj = {};
-        headers.forEach((h, i) => obj[h] = values[i] || '');
-        return obj;
-      }).filter(row => row['Site Name'] && row['Site ID']);
+        headers.forEach((header, index) => {
+          obj[header] = values[index] || '';
+        });
+
+        validRows.push(obj);
+      }
+
+      console.log(`Valid rows processed: ${validRows.length}`);
+      return validRows;
     }
 
-    const db = parseCSV(rawData);
+    // Initialize database
+    function initializeDatabase() {
+      console.log("Initializing database...");
+      db = parseCSV(rawData);
+      console.log(`Database initialized with ${db.length} records`);
+
+      // Update search count
+      document.getElementById('searchDbCount').textContent = db.length;
+
+      // Debug: Show first few records
+      console.log("Sample records:", db.slice(0, 3));
+
+      return db.length > 0;
+    }
+
+    function switchTab(tabName) {
+      // Update tab buttons
+      document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+
+      // Update tab content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.getElementById(tabName + 'Tab').classList.add('active');
+
+      if (tabName === 'dashboard') {
+        console.log("Switching to dashboard tab...");
+        setTimeout(() => {
+          initializeDashboard();
+        }, 100);
+      }
+    }
+
+    function initializeDashboard() {
+      console.log("Initializing dashboard...");
+
+      if (db.length === 0) {
+        console.error("Database is empty, cannot initialize dashboard");
+        return;
+      }
+
+      updateSummaryCards();
+      createCharts();
+    }
+
+    function updateSummaryCards() {
+      console.log("Updating summary cards...");
+
+      const totalSites = db.length;
+      const districts = [...new Set(db.map(site => site.District).filter(d => d && d.trim()))];
+      const operators = [...new Set(db.map(site => site.Ownership).filter(o => o && o.trim()))];
+      const activePower = db.filter(site =>
+        site['Battery Status'] &&
+        site['Battery Status'].toLowerCase().includes('good')
+      ).length;
+
+      console.log("Summary stats:", { totalSites, districts: districts.length, operators: operators.length, activePower });
+
+      document.getElementById('totalSites').textContent = totalSites;
+      document.getElementById('totalDistricts').textContent = districts.length;
+      document.getElementById('totalOperators').textContent = operators.length;
+      document.getElementById('activePower').textContent = activePower;
+    }
+
+    function createCharts() {
+      console.log("Creating charts...");
+
+      try {
+        createPowerSupplyChart();
+        createMSPChart();
+        createDistrictChart();
+        createBatteryChart();
+        createOwnershipChart();
+        createSiteTypeChart();
+
+        console.log("All charts created successfully");
+      } catch (error) {
+        console.error("Error creating charts:", error);
+      }
+    }
+
+    function createPowerSupplyChart() {
+      const ctx = document.getElementById('powerSupplyChart');
+      if (!ctx) {
+        console.error("Power supply chart canvas not found");
+        return;
+      }
+
+      const powerSupplyData = {};
+
+      db.forEach(site => {
+        const power = site['Power Supply Type'] || 'Unknown';
+        if (power.trim()) {
+          powerSupplyData[power] = (powerSupplyData[power] || 0) + 1;
+        }
+      });
+
+      console.log("Power supply data:", powerSupplyData);
+
+      if (charts.powerSupply) charts.powerSupply.destroy();
+
+      charts.powerSupply = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(powerSupplyData),
+          datasets: [{
+            data: Object.values(powerSupplyData),
+            backgroundColor: [
+              '#667eea',
+              '#764ba2',
+              '#f093fb',
+              '#f5576c',
+              '#4facfe',
+              '#43e97b'
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                padding: 20,
+                usePointStyle: true
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function createMSPChart() {
+      const ctx = document.getElementById('mspChart');
+      if (!ctx) return;
+
+      const mspData = {};
+
+      db.forEach(site => {
+        const msp = site['MSP'] || 'Unknown';
+        if (msp.trim()) {
+          mspData[msp] = (mspData[msp] || 0) + 1;
+        }
+      });
+
+      console.log("MSP data:", mspData);
+
+      if (charts.msp) charts.msp.destroy();
+
+      charts.msp = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: Object.keys(mspData),
+          datasets: [{
+            data: Object.values(mspData),
+            backgroundColor: [
+              '#667eea',
+              '#764ba2',
+              '#f093fb',
+              '#f5576c',
+              '#4facfe'
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                padding: 20,
+                usePointStyle: true
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function createDistrictChart() {
+      const ctx = document.getElementById('districtChart');
+      if (!ctx) return;
+
+      const districtData = {};
+
+      db.forEach(site => {
+        const district = site['District'] || 'Unknown';
+        if (district.trim()) {
+          districtData[district] = (districtData[district] || 0) + 1;
+        }
+      });
+
+      console.log("District data:", districtData);
+
+      if (charts.district) charts.district.destroy();
+
+      charts.district = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(districtData),
+          datasets: [{
+            label: 'Number of Sites',
+            data: Object.values(districtData),
+            backgroundColor: 'rgba(102, 126, 234, 0.8)',
+            borderColor: 'rgba(102, 126, 234, 1)',
+            borderWidth: 2,
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(0,0,0,0.1)'
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function createBatteryChart() {
+      const ctx = document.getElementById('batteryChart');
+      if (!ctx) return;
+
+      const batteryData = {};
+
+      db.forEach(site => {
+        const status = site['Battery Status'] || 'Unknown';
+        if (status.trim()) {
+          batteryData[status] = (batteryData[status] || 0) + 1;
+        }
+      });
+
+      console.log("Battery data:", batteryData);
+
+      if (charts.battery) charts.battery.destroy();
+
+      charts.battery = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(batteryData),
+          datasets: [{
+            data: Object.values(batteryData),
+            backgroundColor: [
+              '#28a745',
+              '#ffc107',
+              '#dc3545',
+              '#6c757d',
+              '#17a2b8'
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                padding: 20,
+                usePointStyle: true
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function createOwnershipChart() {
+      const ctx = document.getElementById('ownershipChart');
+      if (!ctx) return;
+
+      const ownershipData = {};
+
+      db.forEach(site => {
+        const ownership = site['Ownership'] || 'Unknown';
+        if (ownership.trim()) {
+          ownershipData[ownership] = (ownershipData[ownership] || 0) + 1;
+        }
+      });
+
+      console.log("Ownership data:", ownershipData);
+
+      if (charts.ownership) charts.ownership.destroy();
+
+      charts.ownership = new Chart(ctx, {
+        type: 'polarArea',
+        data: {
+          labels: Object.keys(ownershipData),
+          datasets: [{
+            data: Object.values(ownershipData),
+            backgroundColor: [
+              'rgba(102, 126, 234, 0.8)',
+              'rgba(118, 75, 162, 0.8)',
+              'rgba(240, 147, 251, 0.8)',
+              'rgba(245, 87, 108, 0.8)'
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                padding: 20,
+                usePointStyle: true
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function createSiteTypeChart() {
+      const ctx = document.getElementById('siteTypeChart');
+      if (!ctx) return;
+
+      const siteTypeData = {};
+
+      db.forEach(site => {
+        const siteType = site['Site Type'] || 'Unknown';
+        if (siteType.trim()) {
+          siteTypeData[siteType] = (siteTypeData[siteType] || 0) + 1;
+        }
+      });
+
+      console.log("Site type data:", siteTypeData);
+
+      if (charts.siteType) charts.siteType.destroy();
+
+      charts.siteType = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(siteTypeData),
+          datasets: [{
+            label: 'Number of Sites',
+            data: Object.values(siteTypeData),
+            backgroundColor: 'rgba(118, 75, 162, 0.8)',
+            borderColor: 'rgba(118, 75, 162, 1)',
+            borderWidth: 2,
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(0,0,0,0.1)'
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+    }
 
     function search() {
       const query = document.getElementById('searchInput').value.trim().toLowerCase();
 
       if (!query) {
-        showMessage('Please enter a site name or ID to search.', 'warning');
+        showMessage('Please enter a site name, site ID, or district to search.', 'warning');
         return;
       }
 
       showLoading();
 
-      // Simulate search delay for better UX
       setTimeout(() => {
-        const match = db.find(row =>
-          row['Site Name'].toLowerCase() === query ||
-          row['Site ID'].toLowerCase() === query ||
-          row['Site Name'].toLowerCase().includes(query) ||
-          row['Site ID'].toLowerCase().includes(query)
+        const matches = db.filter(row =>
+          (row['Site Name'] && row['Site Name'].toLowerCase().includes(query)) ||
+          (row['Site ID'] && row['Site ID'].toLowerCase().includes(query)) ||
+          (row['District'] && row['District'].toLowerCase().includes(query))
         );
 
-        if (!match) {
+        if (matches.length === 0) {
           document.getElementById('result').innerHTML = `
             <div class="no-result fade-in">
               <i class="fas fa-search"></i>
-              <h3>No Site Found</h3>
-              <p>No site found matching "${query}". Please check the site name or ID and try again.</p>
+              <h3>No Sites Found</h3>
+              <p>No sites found matching "${query}". Please check the site name, ID, or district and try again.</p>
             </div>
           `;
           return;
         }
 
-        document.getElementById('result').innerHTML = `
-          <div class="section fade-in">
-            <h3><i class="fas fa-info-circle"></i> Basic Site Information</h3>
-            <div class="fields-grid">
-              ${renderField(match, 'Site Name')}
-              ${renderField(match, 'Site ID')}
-              ${renderField(match, 'Region')}
-              ${renderField(match, 'District')}
-              ${renderField(match, 'Latitude')}
-              ${renderField(match, 'Longitude')}
-              ${renderField(match, 'Site CLLI')}
-              ${renderField(match, 'Ownership')}
-              ${renderField(match, 'Site Type')}
-              ${renderField(match, 'Site Category')}
+        if (matches.length === 1) {
+          const match = matches[0];
+          document.getElementById('result').innerHTML = `
+            <div class="section fade-in">
+              <h3><i class="fas fa-info-circle"></i> Basic Site Information</h3>
+              <div class="fields-grid">
+                ${renderField(match, 'Site Name')}
+                ${renderField(match, 'Site ID')}
+                ${renderField(match, 'Region')}
+                ${renderField(match, 'District')}
+                ${renderField(match, 'Latitude')}
+                ${renderField(match, 'Longitude')}
+                ${renderField(match, 'Site CLLI')}
+                ${renderField(match, 'Ownership')}
+                ${renderField(match, 'Site Type')}
+                ${renderField(match, 'Site Category')}
+              </div>
             </div>
-          </div>
 
-          <div class="section fade-in">
-            <h3><i class="fas fa-bolt"></i> Power System Details</h3>
-            <div class="fields-grid">
-              ${renderField(match, 'Power Supply Type')}
-              ${renderField(match, 'SCECO Account No.')}
-              ${renderField(match, 'Battery Availability')}
-              ${renderStatusField(match, 'Battery Status')}
-              ${renderField(match, 'Battery Capacity in Hrs')}
-              ${renderField(match, 'Back up time in Hours')}
-              ${renderField(match, 'UPS Availability')}
-              ${renderField(match, 'ATS Availability')}
-              ${renderStatusField(match, 'ATS Status')}
+            <div class="section fade-in">
+              <h3><i class="fas fa-bolt"></i> Power System Details</h3>
+              <div class="fields-grid">
+                ${renderField(match, 'Power Supply Type')}
+                ${renderField(match, 'SCECO Account No.')}
+                ${renderField(match, 'Battery Availability')}
+                ${renderStatusField(match, 'Battery Status')}
+                ${renderField(match, 'Battery Capacity in Hrs')}
+                ${renderField(match, 'Back up time in Hours')}
+                ${renderField(match, 'UPS Availability')}
+                ${renderField(match, 'ATS Availability')}
+                ${renderStatusField(match, 'ATS Status')}
+              </div>
             </div>
-          </div>
 
-          <div class="section fade-in">
-            <h3><i class="fas fa-tools"></i> Equipment & Infrastructure</h3>
-            <div class="fields-grid">
-              ${renderField(match, 'MSP')}
-              ${renderField(match, 'BB CAPEX')}
-              ${renderField(match, 'Number of AC')}
-              ${renderField(match, 'AC Type')}
-              ${renderField(match, 'AC Condition (Working / Not Working)')}
-              ${renderField(match, 'AC Condition')}
-              ${renderField(match, 'AC CAPEX Number (BPM)')}
-              ${renderField(match, 'Number of Generator')}
-              ${renderField(match, 'Generator Capacity')}
-              ${renderStatusField(match, 'GEN1 Status')}
-              ${renderStatusField(match, 'GEN2 Status')}
-              ${renderField(match, 'Generator CAPEX Number (BPM)')}
+            <div class="section fade-in">
+              <h3><i class="fas fa-tools"></i> Equipment & Infrastructure</h3>
+              <div class="fields-grid">
+                ${renderField(match, 'MSP')}
+                ${renderField(match, 'BB CAPEX')}
+                ${renderField(match, 'Number of AC')}
+                ${renderField(match, 'AC Type')}
+                ${renderField(match, 'AC Condition (Working / Not Working)')}
+                ${renderField(match, 'AC Condition')}
+                ${renderField(match, 'AC CAPEX Number (BPM)')}
+                ${renderField(match, 'Number of Generator')}
+                ${renderField(match, 'Generator Capacity')}
+                ${renderStatusField(match, 'GEN1 Status')}
+                ${renderStatusField(match, 'GEN2 Status')}
+                ${renderField(match, 'Generator CAPEX Number (BPM)')}
+              </div>
             </div>
-          </div>
 
-          <div class="section fade-in">
-            <h3><i class="fas fa-battery-half"></i> DC System Information</h3>
-            <div class="fields-grid">
-              ${renderField(match, 'DC System Capacity')}
-              ${renderField(match, 'Number of Rectifiers')}
-              ${renderField(match, 'Number of working Rectifiers')}
-              ${renderField(match, 'Site DC Total Capacity')}
-              ${renderField(match, 'DC System CAPEX Number (BPM)')}
-              ${renderField(match, 'Rehab. Pending Issues')}
-              ${renderField(match, 'Remarks (Issues)')}
+            <div class="section fade-in">
+              <h3><i class="fas fa-battery-half"></i> DC System Information</h3>
+              <div class="fields-grid">
+                ${renderField(match, 'DC System Capacity')}
+                ${renderField(match, 'Number of Rectifiers')}
+                ${renderField(match, 'Number of working Rectifiers')}
+                ${renderField(match, 'Site DC Total Capacity')}
+                ${renderField(match, 'DC System CAPEX Number (BPM)')}
+                ${renderField(match, 'Rehab. Pending Issues')}
+                ${renderField(match, 'Remarks (Issues)')}
+              </div>
             </div>
-          </div>
-        `;
+          `;
+        } else {
+          document.getElementById('result').innerHTML = `
+            <div class="section fade-in">
+              <h3><i class="fas fa-list"></i> Search Results (${matches.length} sites found)</h3>
+              <div class="fields-grid">
+                ${matches.map(match => `
+                  <div class="field" style="cursor: pointer;" onclick="searchSpecific('${match['Site ID']}')">
+                    <span class="label">${match['Site Name']} (${match['Site ID']})</span>
+                    <span class="value">
+                      ${match['District']} - ${match['Ownership']} -
+                      <span class="status-indicator ${getBatteryStatusClass(match['Battery Status'])}">${match['Battery Status'] || 'Unknown'}</span>
+                    </span>
+                  </div>
+                `).join('')}
+              </div>
+              <div class="note">
+                <i class="fas fa-mouse-pointer"></i>
+                Click on any site to view detailed information
+              </div>
+            </div>
+          `;
+        }
       }, 500);
+    }
+
+    function searchSpecific(siteId) {
+      document.getElementById('searchInput').value = siteId;
+      search();
+    }
+
+    function getBatteryStatusClass(status) {
+      if (!status) return '';
+      const statusLower = status.toLowerCase();
+      if (statusLower.includes('good')) return 'status-good';
+      if (statusLower.includes('weak')) return 'status-weak';
+      if (statusLower.includes('dead') || statusLower.includes('stolen')) return 'status-dead';
+      return '';
     }
 
     function renderField(obj, key) {
@@ -627,9 +1344,26 @@
       }
     }
 
-    // Auto-focus on search input
+    // Initialize everything when page loads
     document.addEventListener('DOMContentLoaded', function() {
+      console.log("Page loaded, initializing...");
+
+      // Initialize database first
+      const dbInitialized = initializeDatabase();
+
+      if (!dbInitialized) {
+        console.error("Failed to initialize database");
+        return;
+      }
+
+      // Focus search input
       document.getElementById('searchInput').focus();
+
+      // Initialize dashboard after a short delay
+      setTimeout(() => {
+        console.log("Initializing dashboard on page load...");
+        initializeDashboard();
+      }, 1000);
     });
   </script>
 </body>
